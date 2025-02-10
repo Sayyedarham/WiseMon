@@ -73,19 +73,3 @@ for column in target:
 
 joblib.dump(models, "savings_prediction_models.pkl")
 joblib.dump(model_metrics, "model_metrics.pkl")
-
-print("\nModel Performance Summary:")
-print("=" * 50)
-for target_var, metrics in model_metrics.items():
-    print(f"\nTarget Variable: {target_var}")
-    print(f"Train RMSE: {metrics['train_rmse']:.2f}")
-    print(f"Test RMSE: {metrics['test_rmse']:.2f}")
-    print(f"Train R²: {metrics['train_r2']:.3f}")
-    print(f"Test R²: {metrics['test_r2']:.3f}")
-    
-    print("\nTop 5 Important Features:")
-    sorted_features = dict(sorted(metrics['feature_importance'].items(), 
-                                key=lambda x: x[1], reverse=True)[:5])
-    for feature, importance in sorted_features.items():
-        print(f"{feature}: {importance:.3f}")
-    print("-" * 50)
