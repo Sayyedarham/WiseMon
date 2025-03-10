@@ -6,26 +6,28 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import mean_squared_error, r2_score
 import joblib
 
+# Load dataset
 df = pd.read_csv("FinanceSpending.csv")
 
+# Encode categorical variable 'Occupation'
 le = LabelEncoder()
 df['Occupation_encoded'] = le.fit_transform(df['Occupation'])
-df['City_Tier_encoded'] = le.fit_transform(df['City_Tier'])
+joblib.dump(le, 'label_encoder.pkl')
 
-joblib.dump(le, 'label_encoders.pkl')
-
+# Define all features for training
 features = [
-    'Income', 'Age', 'Dependents', 'Occupation_encoded', 'City_Tier_encoded',
-    'Rent', 'Loan_Repayment', 'Insurance', 'Groceries', 'Transport',
-    'Eating_Out', 'Entertainment', 'Utilities', 'Healthcare', 'Education',
-    'Miscellaneous', 'Desired_Savings_Percentage', 'Disposable_Income'
+    'Income', 'Age', 'Dependents', 'Occupation_encoded', 'City_Tier', 'Rent', 'Loan_Repayment',
+    'Insurance', 'Groceries', 'Transport', 'Eating_Out', 'Entertainment', 'Utilities',
+    'Healthcare', 'Education', 'Miscellaneous', 'Desired_Savings_Percentage', 'Disposable_Income'
 ]
 
 target = [
-   'Potential_Savings_Groceries','Potential_Savings_Transport','Potential_Savings_Eating_Out','Potential_Savings_Entertainment',
-    'Potential_Savings_Utilities','Potential_Savings_Healthcare','Potential_Savings_Education','Potential_Savings_Miscellaneous'
+    'Potential_Savings_Groceries', 'Potential_Savings_Transport', 'Potential_Savings_Eating_Out',
+    'Potential_Savings_Entertainment', 'Potential_Savings_Utilities', 'Potential_Savings_Healthcare',
+    'Potential_Savings_Education', 'Potential_Savings_Miscellaneous'
 ]
 
+# Splitting the dataset
 X_train, X_test, y_train, y_test = train_test_split(
     df[features], 
     df[target], 
@@ -34,8 +36,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 model_metrics = {}
-
 models = {}
+
 for column in target:
     model = XGBRegressor(
         n_estimators=100,
@@ -48,12 +50,7 @@ for column in target:
     y_train_single = y_train[column]
     y_test_single = y_test[column]
     
-    model.fit(
-        X_train,
-        y_train_single,
-        eval_set=[(X_test, y_test_single)],
-        verbose=False
-    )
+    model.fit(X_train, y_train_single, eval_set=[(X_test, y_test_single)], verbose=False)
     
     train_pred = model.predict(X_train)
     test_pred = model.predict(X_test)
@@ -71,5 +68,41 @@ for column in target:
     
     joblib.dump(model, f"savings_prediction_model_{column.lower()}.pkl")
 
+# Save models and metrics
 joblib.dump(models, "savings_prediction_models.pkl")
 joblib.dump(model_metrics, "model_metrics.pkl")
+
+# Take user input for prediction
+income = float(input("Enter Income: "))
+occupation = input("Enter Occupation: ")
+rent = float(input("Enter Rent: "))
+groceries = float(input("Enter Groceries expense: "))
+transport = float(input("Enter Transport expense: "))
+desired_savings_percentage = float(input("Enter Desired Savings Percentage: "))
+
+# Encode Occupation
+occupation_encoded = le.transform([occupation])[0]
+
+# Prepare input data
+data_dict = {
+    'Income': [income],
+    'Occupation_encoded': [occupation_encoded],
+    'Rent': [rent],
+    'Groceries': [groceries],
+    'Transport': [transport],
+    'Desired_Savings_Percentage': [desired_savings_percentage]
+}
+input_data = pd.DataFrame(data_dict)
+
+# Load trained models
+models = joblib.load("savings_prediction_models.pkl")
+
+# Make predictions
+predictions = {}
+for column in target:
+    predictions[column] = models[column].predict(input_data)
+
+# Print predictions
+predictions_df = pd.DataFrame(predictions)
+print("Predicted Savings:")
+print(predictions_df)
