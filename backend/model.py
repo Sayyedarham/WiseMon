@@ -73,5 +73,4 @@ for column in target:
 
 joblib.dump(models, "savings_prediction_models.pkl")
 joblib.dump(model_metrics, "model_metrics.pkl")
-Now what I want u to do is to modify the code so that the onl input that should be taken from the user should be 6 parameters amely:
-income,occupation,rent,grocery,transport,desired saving percentage.
+
