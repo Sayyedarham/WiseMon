@@ -140,16 +140,7 @@ def predict_savings(income, occupation, rent, groceries, transport, desired_savi
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "train":
         train_model()
-    else:
-        # Example inference (hardcoded inputs)
-        user_inputs = {
-            'income': 75000,
-            'occupation': 'Engineer',
-            'rent': 1200,
-            'groceries': 500,
-            'transport': 300,
-            'desired_savings_percentage': 15
-        }
+    
 
         results = predict_savings(**user_inputs)
         print("Predicted Potential Savings:", results)
